@@ -1,0 +1,7 @@
+.venv_test_bot/
+*.pyc
+.env
+db.sqlite3
+.env
+__pycache__/
+media/

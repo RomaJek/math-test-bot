@@ -1,6 +1,6 @@
 import django_filters
-from rest_framework import viewsets
-from .models import BotUser, Question, TestAttempt
+from rest_framework import viewsets, status
+from .models import BotUser, Question, TestAttempt, AttemptDetail
 from .serializers import BotUserSerializer, QuestionSerializer, TestAttemptSerializer
 
 import zipfile
@@ -11,7 +11,9 @@ from django.core.files.base import ContentFile
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
-from rest_framework import status
+
+from django.db.models import Count, Avg, Q
+
 
 # --- 1. ARNALLI FILTIRLEW KLASSI ---
 # Bul klass bazadan súwreti bar yamasa joq sorawlardı ajıratıw ushın kerek
@@ -37,7 +39,7 @@ class QuestionFilter(django_filters.FilterSet):
 
 # --- 2. VIEWSETS (API Logikası) ---
 
-# TZ 4.2: Sorawlar CRUD API
+# Sorawlar CRUD API
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
@@ -49,13 +51,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
     search_fields = ['text']
 
 
-# TZ 4.4: Paydalanıwshılar API (Tek kóriw ushın)
+# Paydalanıwshılar API (Tek kóriw ushın)
 class BotUserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = BotUser.objects.all().order_by('-created_at')
     serializer_class = BotUserSerializer
 
 
-# TZ 4.4: Test nátiyjeleri API (Tek kóriw ushın)
+# Test nátiyjeleri API (Tek kóriw ushın)
 class TestAttemptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TestAttempt.objects.all().order_by('-created_at')
     serializer_class = TestAttemptSerializer
@@ -64,7 +66,7 @@ class TestAttemptViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 
-# TZ 4.3: Excel + Súwretlerdi (ZIP) júklew API
+# Excel + Súwretlerdi (ZIP) júklew API
 class ZipImportView(APIView):
     # API-ge fayl qabıllaw imkaniyatın beremiz
     parser_classes = [MultiPartParser]
@@ -134,4 +136,41 @@ class ZipImportView(APIView):
         
 
 
+
+
+# Admin Dashboard API
+class DashboardView(APIView):
+    def get(self, request):
+        # 1. Ulıwma oqıwshılar sanı
+        total_users = BotUser.objects.count()
+
+        # 2. Ulıwma test tapsırılǵan sanı
+        total_attempts = TestAttempt.objects.count()
+
+        # 3. Top 10 oqıwshı (Reyting - eń kóp ball jıynaǵanlar)
+        # Hár bir userdiń jıynaǵan ulıwma balların qosıp, joqarıdan tómenge dizemiz
+        top_students = TestAttempt.objects.values(
+            'user__full_name'
+        ).annotate(
+            total_score=Count('score'), # Qansha ret tapsırǵanı
+            avg_score=Avg('score')      # Ortasha ballı
+        ).order_by('-avg_score')[:10]
+
+        # 4. Eń qıyın 5 soraw (Eń kóp qáte etilgen sorawlar)
+        # AttemptDetail ishinen is_correct=False bolǵanların sanaymız
+        hardest_questions = AttemptDetail.objects.filter(is_correct=False).values(
+            'question__text'
+        ).annotate(
+            error_count=Count('id')
+        ).order_by('-error_count')[:5]
+
+        # Nátiyjeni JSON formatında qaytaramız
+        data = {
+            "total_users": total_users,
+            "total_attempts": total_attempts,
+            "top_10_students": top_students,
+            "hardest_questions": hardest_questions
+        }
+        
+        return Response(data)
 

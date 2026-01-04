@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import QuestionViewSet, BotUserViewSet, TestAttemptViewSet, ZipImportView
+from .views import QuestionViewSet, BotUserViewSet, TestAttemptViewSet, ZipImportView, DashboardView
 
 # Router — barlıq CRUD mánzillerin (GET, POST, PUT, DELETE) avtomat jaratadı
 router = DefaultRouter()
@@ -12,4 +12,5 @@ urlpatterns = [
     path('', include(router.urls)),
     # Zip import manzili
     path('import-questions/', ZipImportView.as_view(), name='import-questions'),
+    path('dashboard/', DashboardView.as_view(), name='admin-dashboard'),
 ]

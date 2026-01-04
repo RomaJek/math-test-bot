@@ -1,4 +1,6 @@
 from django.db import models
+import os
+import uuid
 
 class BotUser(models.Model):
     telegram_id = models.BigIntegerField(unique=True, db_index=True, verbose_name="Telegram ID")
@@ -14,6 +16,13 @@ class BotUser(models.Model):
         verbose_name_plural = "Bot paydalanıwshıları"
 
 
+# Súwretlerge unikal at beriw funksiyası
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1] # Fayldıń formatın alıw (jpg, png ...)
+    filename = f"{uuid.uuid4()}.{ext}" # Jańa unikal at jasaw
+    return os.path.join('questions/', filename) # media/questions/ ishine saqlaw
+
+
 class Question(models.Model):
     ANSWER_CHOICES = [
         ('a', 'A'),
@@ -22,7 +31,7 @@ class Question(models.Model):
         ('d', 'D'),
     ]
     text = models.TextField(verbose_name="Soraw teksti")
-    image = models.ImageField(upload_to='questions/', null=True, blank=True, verbose_name="Soraw súwreti")
+    image = models.ImageField(upload_to=get_file_path, null=True, blank=True, verbose_name="Soraw súwreti")
     option_a = models.CharField(max_length=255, verbose_name="A variantı")
     option_b = models.CharField(max_length=255, verbose_name="B variantı")
     option_c = models.CharField(max_length=255, verbose_name="C variantı")

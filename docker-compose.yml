@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$DB_USER -d $$DB_NAME"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - media_data:/app/media   # Named volume qollantıq
+      - static_data:/app/static  # Named volume qollantıq
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bot:
+    build: .
+    command: python manage.py runbot
+    restart: always
+    volumes:
+      - media_data:/app/media   # Botqa da media kerek (súwretlerdi jiberiw ushın)
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - media_data:/app/media:ro   # Nginx súwretlerdi oqıy alıwı ushın
+      - static_data:/app/static:ro # Nginx statikanı oqıy alıwı ushın
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  media_data:   # Bazada turaqlı saqlanıwı ushın járiyaladıq
+  static_data:  # Bazada turaqlı saqlanıwı ushın járiyaladıq

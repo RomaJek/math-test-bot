@@ -62,6 +62,12 @@ class AttemptDetail(models.Model):
         return f"Detallar: {self.attempt.user.full_name}"
 
 
+class BotState(models.Model):
+    user_id = models.BigIntegerField(unique=True, verbose_name="User ID")
+    state = models.CharField(max_length=255, null=True, blank=True)
+    data = models.JSONField(default=dict, verbose_name="FSM Data")
 
+    def __str__(self):
+        return f"State: {self.user_id} - {self.state}"
 
 

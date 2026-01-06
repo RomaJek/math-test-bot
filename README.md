@@ -20,7 +20,7 @@ Bul proekt matematika páninen testlerdi avtomatlastırılǵan túrde ótkeriw u
 ### 💻 Lokal iske túsiriw (Docker)
 
 1. Proektti klon qılıw: 
-   * git clone https://github.com/siziń_username/math-test-bot.git cd math-test-bot
+   * git clone https://github.com/RomaJek/math-test-bot.git cd math-test-bot
 2. .env faylın tayarlaw 
 
     Proektıń bas papkasında .env faylın ashıń hám mınanı jazıń:

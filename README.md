@@ -23,7 +23,7 @@ Bul proekt matematika páninen testlerdi avtomatlastırılǵan túrde ótkeriw u
    * git clone https://github.com/RomaJek/math-test-bot.git cd math-test-bot
 2. .env faylın tayarlaw 
 
-    Proektıń bas papkasında .env faylın ashıń hám mınanı jazıń:
+    .env faylın .env.example faylına qarap tayarlań!:
 
     SECRET_KEY='siziń_jasırın_kodińiz'
     
@@ -43,6 +43,7 @@ Bul proekt matematika páninen testlerdi avtomatlastırılǵan túrde ótkeriw u
 3. Docker-di iske túsiriw
 
     docker-compose up --build -d
+
 
 4. Admin (Superuser) jaratıw
     docker-compose exec web python manage.py createsuperuser
